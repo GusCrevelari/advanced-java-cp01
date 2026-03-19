@@ -1,42 +1,30 @@
 package br.com.fiap.app;
 
 import br.com.fiap.modelo.Funcionario;
-import br.com.fiap.persistencia.JPAUtil;
-import jakarta.persistence.EntityManager;
-
-import java.util.List;
+import br.com.fiap.modelo.FuncionarioComissionado;
+import br.com.fiap.modelo.FuncionarioSenior;
+import br.com.fiap.reflection.GeradorSQL;
 
 public class Main {
     public static void main(String[] args) {
 
-        EntityManager em = JPAUtil.getEntityManager();
+        Funcionario funcionario = new Funcionario("Gustavo", 160, 25.0);
+        FuncionarioSenior senior = new FuncionarioSenior("Marina", 160, 25.0, 100.0);
+        FuncionarioComissionado comissionado = new FuncionarioComissionado("Carlos", 160, 25.0, 800.0);
 
-        try {
-            System.out.println("=== DELETE ===");
+        System.out.println("=== FUNCIONÁRIO COMUM ===");
+        funcionario.imprimirInformacao();
 
-            List<Funcionario> lista = em.createQuery(
-                            "SELECT f FROM Funcionario f WHERE f.nome = :nome", Funcionario.class)
-                    .setParameter("nome", "Gustavo Evidencia")
-                    .getResultList();
+        System.out.println("\n=== FUNCIONÁRIO SÊNIOR ===");
+        senior.imprimirInformacao();
 
-            if (lista.isEmpty()) {
-                System.out.println("Funcionário não encontrado para exclusão.");
-                return;
-            }
+        System.out.println("\n=== FUNCIONÁRIO COMISSIONADO ===");
+        comissionado.imprimirInformacao();
 
-            Funcionario funcionario = lista.get(0);
-
-            em.getTransaction().begin();
-            em.remove(funcionario);
-            em.getTransaction().commit();
-
-            System.out.println("Funcionário removido com sucesso.");
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            em.close();
-            JPAUtil.fechar();
-        }
+        System.out.println("\n=== SQL GERADO VIA REFLECTION ===");
+        System.out.println(GeradorSQL.gerarSelectTodos(funcionario));
+        System.out.println(GeradorSQL.gerarInsert(funcionario));
+        System.out.println(GeradorSQL.gerarInsert(senior));
+        System.out.println(GeradorSQL.gerarInsert(comissionado));
     }
 }
